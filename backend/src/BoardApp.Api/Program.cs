@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using BoardApp.Api.Data;
 using BoardApp.Api.Models;
 using BoardApp.Api.DTOs.Projects;
@@ -7,6 +8,11 @@ using BoardApp.Api.DTOs.SubProjects;
 using BoardApp.Api.DTOs.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80);
+});
 
 builder.Services.AddCors(options =>
 {

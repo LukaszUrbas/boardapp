@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API = 'http://localhost:5001';
+const API = 'http://localhost:8080';
 const STATUSES = ['New', 'InProgress', 'OnHold', 'Finished'];
 
 export default function App() {

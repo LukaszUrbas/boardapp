@@ -28,6 +28,16 @@ npm start
 
 Then open `http://localhost:3000`.
 
+## Run with Docker
+
+Ensure Docker and Docker Compose are installed.
+
+```bash
+docker-compose up --build
+```
+
+The backend will be available at `http://localhost:8080` and the frontend at `http://localhost:3000`.
+
 ## Tech Stack
 - Backend: ASP.NET Core 10.0
 - Frontend: React 18 + react-scripts
