@@ -1,12 +1,12 @@
 # BoardApp
 
-A simple React + .NET in-memory project and task manager.
+A simple React + .NET project and task manager.
 
 ## Features
 - Create projects
 - Create tasks
 - Assign tasks to users
-- No database required
+- PostgreSQL database with Flyway migrations
 - No authentication or authorization
 
 ## Run the backend
@@ -36,9 +36,20 @@ Ensure Docker and Docker Compose are installed.
 docker-compose up --build
 ```
 
-The backend will be available at `http://localhost:8080` and the frontend at `http://localhost:3000`.
+This will start:
+- PostgreSQL on `localhost:5432`
+- Flyway migrations (auto-applied from `backend/flyway/sql`)
+- Backend on `http://localhost:8080`
+- Frontend on `http://localhost:3000`
+
+If you change migration files, recreate the stack for a clean run:
+
+```bash
+docker-compose down -v
+docker-compose up --build
+```
 
 ## Tech Stack
 - Backend: ASP.NET Core 10.0
 - Frontend: React 18 + react-scripts
-- Data storage: in-memory only
+- Data storage: PostgreSQL + Flyway migrations

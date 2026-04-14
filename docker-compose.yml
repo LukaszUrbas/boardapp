@@ -1,14 +1,54 @@
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: boardapp-postgres
+    environment:
+      - POSTGRES_DB=boardapp
+      - POSTGRES_USER=boardapp
+      - POSTGRES_PASSWORD=boardapp_pw
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U boardapp -d boardapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - boardapp-network
+
+  flyway:
+    image: flyway/flyway:10-alpine
+    platform: linux/amd64
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      -url=jdbc:postgresql://postgres:5432/boardapp
+      -user=boardapp
+      -password=boardapp_pw
+      -connectRetries=60
+      migrate
+    volumes:
+      - ./backend/flyway/sql:/flyway/sql
+    networks:
+      - boardapp-network
+
   backend:
     build:
       context: ./backend/src/BoardApp.Api
       dockerfile: Dockerfile
     ports:
       - "8080:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__BoardApp=Host=postgres;Port=5432;Database=boardapp;Username=boardapp;Password=boardapp_pw
     networks:
       - boardapp-network
 
@@ -26,3 +66,6 @@ services:
 networks:
   boardapp-network:
     driver: bridge
+
+volumes:
+  postgres-data:
