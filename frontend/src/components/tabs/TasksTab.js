@@ -36,7 +36,8 @@ export default function TasksTab({
   filteredTasks,
   statuses,
   getUserName,
-  updateTaskStatus
+  updateTaskStatus,
+  deleteTask
 }) {
   return (
     <Grid container spacing={2}>
@@ -196,6 +197,13 @@ export default function TasksTab({
                               ))}
                             </Select>
                           </FormControl>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => deleteTask(task.Id)}
+                          >
+                            Usun
+                          </Button>
                         </Stack>
                       </CardContent>
                     </Card>

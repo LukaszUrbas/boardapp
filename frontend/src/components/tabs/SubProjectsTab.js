@@ -26,7 +26,8 @@ export default function SubProjectsTab({
   setSubProjectFilterProjectId,
   filteredSubProjects,
   statuses,
-  updateSubProjectStatus
+  updateSubProjectStatus,
+  deleteSubProject
 }) {
   return (
     <Grid container spacing={2}>
@@ -123,6 +124,13 @@ export default function SubProjectsTab({
                               ))}
                             </Select>
                           </FormControl>
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => deleteSubProject(subProject.Id)}
+                          >
+                            Usun
+                          </Button>
                         </Stack>
                       </CardContent>
                     </Card>

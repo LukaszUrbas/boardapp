@@ -109,6 +109,17 @@ app.MapPut("/projects/{id:int}", async (int id, ProjectUpdateRequest request, Ap
     return Results.Ok(project);
 });
 
+app.MapDelete("/projects/{id:int}", async (int id, AppDbContext db) =>
+{
+    var project = await db.Projects.SingleOrDefaultAsync(p => p.Id == id);
+    if (project is null)
+        return Results.NotFound();
+
+    db.Projects.Remove(project);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 // ===== SUBPROJECT ENDPOINTS =====
 app.MapGet("/projects/{projectId:int}/subprojects", async (int projectId, AppDbContext db) =>
 {
@@ -179,6 +190,17 @@ app.MapPut("/subprojects/{id:int}", async (int id, SubProjectUpdateRequest reque
 
     await db.SaveChangesAsync();
     return Results.Ok(subproject);
+});
+
+app.MapDelete("/subprojects/{id:int}", async (int id, AppDbContext db) =>
+{
+    var subproject = await db.SubProjects.SingleOrDefaultAsync(sp => sp.Id == id);
+    if (subproject is null)
+        return Results.NotFound();
+
+    db.SubProjects.Remove(subproject);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
 });
 
 // ===== TASK ENDPOINTS =====
@@ -258,6 +280,17 @@ app.MapPut("/tasks/{id:int}", async (int id, TaskUpdateRequest request, AppDbCon
 
     await db.SaveChangesAsync();
     return Results.Ok(task);
+});
+
+app.MapDelete("/tasks/{id:int}", async (int id, AppDbContext db) =>
+{
+    var task = await db.Tasks.SingleOrDefaultAsync(t => t.Id == id);
+    if (task is null)
+        return Results.NotFound();
+
+    db.Tasks.Remove(task);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
 });
 
 app.MapGet("/health", async (AppDbContext db) =>

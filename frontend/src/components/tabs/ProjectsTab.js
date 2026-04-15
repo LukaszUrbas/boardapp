@@ -21,7 +21,8 @@ export default function ProjectsTab({
   createProject,
   projects,
   statuses,
-  updateProjectStatus
+  updateProjectStatus,
+  deleteProject
 }) {
   return (
     <Grid container spacing={2}>
@@ -86,6 +87,13 @@ export default function ProjectsTab({
                             ))}
                           </Select>
                         </FormControl>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => deleteProject(project.Id)}
+                        >
+                          Usun
+                        </Button>
                       </Stack>
                     </CardContent>
                   </Card>

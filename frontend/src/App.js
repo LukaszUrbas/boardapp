@@ -84,6 +84,25 @@ export default function App() {
 
   useEffect(() => {
     if (
+      selectedProjectId &&
+      !projects.some(p => p.Id === Number(selectedProjectId))
+    ) {
+      setSelectedProjectId('');
+      setSelectedSubProjectId('');
+    }
+
+    if (selectedProjectId) {
+      const selectedProject = projects.find(p => p.Id === Number(selectedProjectId));
+      const selectedSubExists = selectedProject?.SubProjects.some(
+        sp => sp.Id === Number(selectedSubProjectId)
+      );
+
+      if (!selectedSubExists) {
+        setSelectedSubProjectId('');
+      }
+    }
+
+    if (
       subProjectFilterProjectId &&
       !projects.some(p => p.Id === Number(subProjectFilterProjectId))
     ) {
@@ -97,7 +116,7 @@ export default function App() {
       setTaskFilterProjectId('');
       setTaskFilterSubProjectId('');
     }
-  }, [projects, subProjectFilterProjectId, taskFilterProjectId]);
+  }, [projects, selectedProjectId, selectedSubProjectId, subProjectFilterProjectId, taskFilterProjectId]);
 
   useEffect(() => {
     const selectedProject = projects.find(p => p.Id === Number(taskFilterProjectId));
@@ -205,6 +224,48 @@ export default function App() {
     }
   };
 
+  const deleteProject = async (projectId) => {
+    if (!window.confirm('Czy na pewno usunac projekt wraz z podprojektami i zadaniami?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/projects/${projectId}`);
+      setMessage('Projekt usuniety.');
+      await fetchData();
+    } catch (error) {
+      setMessage('Nie udalo sie usunac projektu.');
+    }
+  };
+
+  const deleteSubProject = async (subProjectId) => {
+    if (!window.confirm('Czy na pewno usunac podprojekt wraz z zadaniami?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/subprojects/${subProjectId}`);
+      setMessage('Podprojekt usuniety.');
+      await fetchData();
+    } catch (error) {
+      setMessage('Nie udalo sie usunac podprojektu.');
+    }
+  };
+
+  const deleteTask = async (taskId) => {
+    if (!window.confirm('Czy na pewno usunac zadanie?')) {
+      return;
+    }
+
+    try {
+      await axios.delete(`${API}/tasks/${taskId}`);
+      setMessage('Zadanie usuniete.');
+      await fetchData();
+    } catch (error) {
+      setMessage('Nie udalo sie usunac zadania.');
+    }
+  };
+
   const getSelectedProject = () => projects.find(p => p.Id === Number(selectedProjectId));
   const getUserName = (userId) => users.find(u => u.Id === userId)?.Name || 'Unassigned';
   const filteredSubProjects = projects.find(
@@ -257,6 +318,7 @@ export default function App() {
                 projects={projects}
                 statuses={STATUSES}
                 updateProjectStatus={updateProjectStatus}
+                deleteProject={deleteProject}
               />
             )}
 
@@ -275,6 +337,7 @@ export default function App() {
                 filteredSubProjects={filteredSubProjects}
                 statuses={STATUSES}
                 updateSubProjectStatus={updateSubProjectStatus}
+                deleteSubProject={deleteSubProject}
               />
             )}
 
@@ -303,6 +366,7 @@ export default function App() {
                 statuses={STATUSES}
                 getUserName={getUserName}
                 updateTaskStatus={updateTaskStatus}
+                deleteTask={deleteTask}
               />
             )}
           </Stack>
