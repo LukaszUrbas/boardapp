@@ -16,6 +16,8 @@ var app = builder.Build();
 
 app.UseCors();
 app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapBoardAppEndpoints();
 
 app.Run("http://localhost:5001");

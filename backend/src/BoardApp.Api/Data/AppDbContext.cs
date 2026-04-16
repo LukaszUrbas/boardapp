@@ -18,6 +18,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Username).HasColumnName("username").HasMaxLength(100).IsRequired();
+            entity.Property(e => e.PasswordHash).HasColumnName("password_hash").HasMaxLength(200).IsRequired();
         });
 
         modelBuilder.Entity<Project>(entity =>

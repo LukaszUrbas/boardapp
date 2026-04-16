@@ -17,6 +17,7 @@ package-lock.json
 # Build artifacts
 /dist
 /build
+frontend/build/
 
 # OS files
 .DS_Store

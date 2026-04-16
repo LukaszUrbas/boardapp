@@ -6,10 +6,14 @@ public static class EndpointRouteBuilderExtensions
 {
     public static IEndpointRouteBuilder MapBoardAppEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapUserEndpoints();
-        app.MapProjectEndpoints();
-        app.MapSubProjectEndpoints();
-        app.MapTaskEndpoints();
+        app.MapAuthEndpoints();
+
+        var secured = app.MapGroup(string.Empty).RequireAuthorization();
+        secured.MapUserEndpoints();
+        secured.MapProjectEndpoints();
+        secured.MapSubProjectEndpoints();
+        secured.MapTaskEndpoints();
+
         app.MapHealthEndpoints();
 
         return app;

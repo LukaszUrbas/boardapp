@@ -24,12 +24,28 @@ function normalizeProjects(projects) {
   }));
 }
 
-export function useAppData() {
+function isUnauthorized(error) {
+  return error?.response?.status === 401;
+}
+
+export function useAppData(token, onUnauthorized) {
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
   const [message, setMessage] = useState('');
 
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common.Authorization;
+      setUsers([]);
+      setProjects([]);
+    }
+  }, [token]);
+
   const fetchData = useCallback(async () => {
+    if (!token) return;
+
     try {
       const [usersRes, projectsRes] = await Promise.all([
         axios.get(`${API}/users`),
@@ -37,10 +53,11 @@ export function useAppData() {
       ]);
       setUsers(usersRes.data);
       setProjects(normalizeProjects(projectsRes.data));
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Nie można połączyć się z API.');
     }
-  }, []);
+  }, [onUnauthorized, token]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -52,21 +69,23 @@ export function useAppData() {
       await fetchData();
       setMessage('Projekt utworzony.');
       return true;
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd tworzenia projektu.');
       return false;
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const updateProjectStatus = useCallback(async (projectId, status) => {
     setProjects(prev => prev.map(p => p.Id === projectId ? { ...p, Status: status } : p));
     try {
       await axios.put(`${API}/projects/${projectId}`, { Status: status });
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd aktualizacji statusu.');
       await fetchData();
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const deleteProject = useCallback(async (projectId) => {
     if (!window.confirm('Czy na pewno usunąć projekt wraz z podprojektami i zadaniami?')) return;
@@ -74,10 +93,11 @@ export function useAppData() {
       await axios.delete(`${API}/projects/${projectId}`);
       await fetchData();
       setMessage('Projekt usunięty.');
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd usuwania projektu.');
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   // ===== SUBPROJECTS =====
 
@@ -87,11 +107,12 @@ export function useAppData() {
       await fetchData();
       setMessage('Podprojekt utworzony.');
       return true;
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd tworzenia podprojektu.');
       return false;
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const updateSubProjectStatus = useCallback(async (subProjectId, status) => {
     setProjects(prev => prev.map(p => ({
@@ -102,11 +123,12 @@ export function useAppData() {
     })));
     try {
       await axios.put(`${API}/subprojects/${subProjectId}`, { Status: status });
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd aktualizacji statusu.');
       await fetchData();
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const deleteSubProject = useCallback(async (subProjectId) => {
     if (!window.confirm('Czy na pewno usunąć podprojekt wraz z zadaniami?')) return;
@@ -114,10 +136,11 @@ export function useAppData() {
       await axios.delete(`${API}/subprojects/${subProjectId}`);
       await fetchData();
       setMessage('Podprojekt usunięty.');
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd usuwania podprojektu.');
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   // ===== TASKS =====
 
@@ -131,11 +154,12 @@ export function useAppData() {
       await fetchData();
       setMessage('Zadanie utworzone.');
       return true;
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd tworzenia zadania.');
       return false;
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const updateTaskStatus = useCallback(async (taskId, status) => {
     setProjects(prev => prev.map(p => ({
@@ -147,11 +171,12 @@ export function useAppData() {
     })));
     try {
       await axios.put(`${API}/tasks/${taskId}`, { Status: status });
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd aktualizacji statusu.');
       await fetchData();
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const deleteTask = useCallback(async (taskId) => {
     if (!window.confirm('Czy na pewno usunąć zadanie?')) return;
@@ -159,10 +184,11 @@ export function useAppData() {
       await axios.delete(`${API}/tasks/${taskId}`);
       await fetchData();
       setMessage('Zadanie usunięte.');
-    } catch {
+    } catch (error) {
+      if (isUnauthorized(error)) onUnauthorized?.();
       setMessage('Błąd usuwania zadania.');
     }
-  }, [fetchData]);
+  }, [fetchData, onUnauthorized]);
 
   const getUserName = useCallback(
     (userId) => users.find(u => u.Id === userId)?.Name ?? 'Nieprzypisany',
