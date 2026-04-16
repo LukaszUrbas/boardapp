@@ -132,7 +132,7 @@ export default function App() {
   // Project operations
   const createProject = async (e) => {
     e.preventDefault();
-    if (!projectName.trim()) return;
+    if (!projectName.trim()) return false;
 
     try {
       await axios.post(`${API}/projects`, {
@@ -143,8 +143,10 @@ export default function App() {
       setProjectDescription('');
       setMessage('Project created successfully.');
       await fetchData();
+      return true;
     } catch (error) {
       setMessage('Failed to create project.');
+      return false;
     }
   };
 
@@ -163,7 +165,7 @@ export default function App() {
   // SubProject operations
   const createSubProject = async (e) => {
     e.preventDefault();
-    if (!subProjectName.trim() || !selectedProjectId) return;
+    if (!subProjectName.trim() || !selectedProjectId) return false;
 
     try {
       await axios.post(`${API}/projects/${selectedProjectId}/subprojects`, {
@@ -174,8 +176,10 @@ export default function App() {
       setSubProjectDescription('');
       setMessage('SubProject created successfully.');
       await fetchData();
+      return true;
     } catch (error) {
       setMessage('Failed to create subproject.');
+      return false;
     }
   };
 
@@ -194,7 +198,7 @@ export default function App() {
   // Task operations
   const createTask = async (e) => {
     e.preventDefault();
-    if (!taskTitle.trim() || !selectedSubProjectId) return;
+    if (!taskTitle.trim() || !selectedSubProjectId) return false;
 
     try {
       await axios.post(`${API}/subprojects/${selectedSubProjectId}/tasks`, {
@@ -207,8 +211,10 @@ export default function App() {
       setTaskAssigneeId('');
       setMessage('Task created successfully.');
       await fetchData();
+      return true;
     } catch (error) {
       setMessage('Failed to create task.');
+      return false;
     }
   };
 

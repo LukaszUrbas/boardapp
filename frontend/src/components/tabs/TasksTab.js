@@ -3,6 +3,9 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   InputLabel,
@@ -12,6 +15,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { useState } from 'react';
 
 export default function TasksTab({
   selectedProjectId,
@@ -39,88 +43,41 @@ export default function TasksTab({
   updateTaskStatus,
   deleteTask
 }) {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const handleClose = () => {
+    setIsCreateOpen(false);
+    setSelectedProjectId('');
+    setSelectedSubProjectId('');
+    setTaskTitle('');
+    setTaskDescription('');
+    setTaskAssigneeId('');
+  };
+
+  const handleCreateTask = async (e) => {
+    const wasCreated = await createTask(e);
+    if (wasCreated) {
+      setIsCreateOpen(false);
+    }
+  };
+
   return (
     <Grid container spacing={2}>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Card elevation={2}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Nowe zadanie</Typography>
-            <Box component="form" onSubmit={createTask}>
-              <Stack spacing={2}>
-                <FormControl required>
-                  <InputLabel id="create-task-project">Projekt</InputLabel>
-                  <Select
-                    labelId="create-task-project"
-                    value={selectedProjectId}
-                    label="Projekt"
-                    onChange={(e) => {
-                      setSelectedProjectId(e.target.value);
-                      setSelectedSubProjectId('');
-                    }}
-                  >
-                    <MenuItem value="">Wybierz projekt</MenuItem>
-                    {projects.map((project) => (
-                      <MenuItem key={project.Id} value={String(project.Id)}>{project.Name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl required>
-                  <InputLabel id="create-task-subproject">Podprojekt</InputLabel>
-                  <Select
-                    labelId="create-task-subproject"
-                    value={selectedSubProjectId}
-                    label="Podprojekt"
-                    onChange={(e) => setSelectedSubProjectId(e.target.value)}
-                  >
-                    <MenuItem value="">Wybierz podprojekt</MenuItem>
-                    {selectedProject?.SubProjects.map((subProject) => (
-                      <MenuItem key={subProject.Id} value={String(subProject.Id)}>{subProject.Name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <TextField
-                  value={taskTitle}
-                  onChange={(e) => setTaskTitle(e.target.value)}
-                  label="Tytul zadania"
-                  required
-                />
-                <TextField
-                  value={taskDescription}
-                  onChange={(e) => setTaskDescription(e.target.value)}
-                  label="Opis zadania"
-                  multiline
-                  minRows={2}
-                />
-
-                <FormControl>
-                  <InputLabel id="create-task-assignee">Przypisana osoba</InputLabel>
-                  <Select
-                    labelId="create-task-assignee"
-                    value={taskAssigneeId}
-                    label="Przypisana osoba"
-                    onChange={(e) => setTaskAssigneeId(e.target.value)}
-                  >
-                    <MenuItem value="">Brak</MenuItem>
-                    {users.map((user) => (
-                      <MenuItem key={user.Id} value={String(user.Id)}>{user.Name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <Button type="submit" variant="contained">Dodaj zadanie</Button>
-              </Stack>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-
-      <Grid size={{ xs: 12, md: 8 }}>
+      <Grid size={{ xs: 12 }}>
         <Card elevation={2}>
           <CardContent>
             <Stack spacing={2}>
-              <Typography variant="h6">Lista zadan</Typography>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                spacing={2}
+              >
+                <Typography variant="h6">Lista zadan</Typography>
+                <Button variant="contained" onClick={() => setIsCreateOpen(true)}>
+                  Dodaj
+                </Button>
+              </Stack>
 
               <Grid container spacing={1.5}>
                 <Grid size={{ xs: 12, sm: 6 }}>
@@ -214,6 +171,85 @@ export default function TasksTab({
           </CardContent>
         </Card>
       </Grid>
+
+      <Dialog open={isCreateOpen} onClose={handleClose} fullWidth maxWidth="sm">
+        <DialogTitle>Nowe zadanie</DialogTitle>
+        <DialogContent>
+          <Stack component="form" onSubmit={handleCreateTask} spacing={2} sx={{ pt: 1 }}>
+            <FormControl required>
+              <InputLabel id="create-task-project">Projekt</InputLabel>
+              <Select
+                labelId="create-task-project"
+                value={selectedProjectId}
+                label="Projekt"
+                onChange={(e) => {
+                  setSelectedProjectId(e.target.value);
+                  setSelectedSubProjectId('');
+                }}
+              >
+                <MenuItem value="">Wybierz projekt</MenuItem>
+                {projects.map((project) => (
+                  <MenuItem key={project.Id} value={String(project.Id)}>{project.Name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl required>
+              <InputLabel id="create-task-subproject">Podprojekt</InputLabel>
+              <Select
+                labelId="create-task-subproject"
+                value={selectedSubProjectId}
+                label="Podprojekt"
+                onChange={(e) => setSelectedSubProjectId(e.target.value)}
+              >
+                <MenuItem value="">Wybierz podprojekt</MenuItem>
+                {selectedProject?.SubProjects.map((subProject) => (
+                  <MenuItem key={subProject.Id} value={String(subProject.Id)}>{subProject.Name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              value={taskTitle}
+              onChange={(e) => setTaskTitle(e.target.value)}
+              label="Tytul zadania"
+              required
+              autoFocus
+            />
+            <TextField
+              value={taskDescription}
+              onChange={(e) => setTaskDescription(e.target.value)}
+              label="Opis zadania"
+              multiline
+              minRows={2}
+            />
+
+            <FormControl>
+              <InputLabel id="create-task-assignee">Przypisana osoba</InputLabel>
+              <Select
+                labelId="create-task-assignee"
+                value={taskAssigneeId}
+                label="Przypisana osoba"
+                onChange={(e) => setTaskAssigneeId(e.target.value)}
+              >
+                <MenuItem value="">Brak</MenuItem>
+                {users.map((user) => (
+                  <MenuItem key={user.Id} value={String(user.Id)}>{user.Name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+              <Button variant="outlined" onClick={handleClose}>
+                Anuluj
+              </Button>
+              <Button type="submit" variant="contained">
+                Dodaj zadanie
+              </Button>
+            </Stack>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Grid>
   );
 }

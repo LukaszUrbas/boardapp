@@ -3,6 +3,9 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   InputLabel,
@@ -12,6 +15,7 @@ import {
   TextField,
   Typography
 } from '@mui/material';
+import { useState } from 'react';
 
 export default function SubProjectsTab({
   selectedProjectId,
@@ -29,53 +33,39 @@ export default function SubProjectsTab({
   updateSubProjectStatus,
   deleteSubProject
 }) {
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const handleClose = () => {
+    setIsCreateOpen(false);
+    setSelectedProjectId('');
+    setSubProjectName('');
+    setSubProjectDescription('');
+  };
+
+  const handleCreateSubProject = async (e) => {
+    const wasCreated = await createSubProject(e);
+    if (wasCreated) {
+      setIsCreateOpen(false);
+    }
+  };
+
   return (
     <Grid container spacing={2}>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Card elevation={2}>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Nowy podprojekt</Typography>
-            <Box component="form" onSubmit={createSubProject}>
-              <Stack spacing={2}>
-                <FormControl required>
-                  <InputLabel id="create-subproject-project">Projekt</InputLabel>
-                  <Select
-                    labelId="create-subproject-project"
-                    value={selectedProjectId}
-                    label="Projekt"
-                    onChange={(e) => setSelectedProjectId(e.target.value)}
-                  >
-                    <MenuItem value="">Wybierz projekt</MenuItem>
-                    {projects.map((project) => (
-                      <MenuItem key={project.Id} value={String(project.Id)}>{project.Name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  value={subProjectName}
-                  onChange={(e) => setSubProjectName(e.target.value)}
-                  label="Nazwa podprojektu"
-                  required
-                />
-                <TextField
-                  value={subProjectDescription}
-                  onChange={(e) => setSubProjectDescription(e.target.value)}
-                  label="Opis podprojektu"
-                  multiline
-                  minRows={3}
-                />
-                <Button type="submit" variant="contained">Dodaj podprojekt</Button>
-              </Stack>
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
-
-      <Grid size={{ xs: 12, md: 8 }}>
+      <Grid size={{ xs: 12 }}>
         <Card elevation={2}>
           <CardContent>
             <Stack spacing={2}>
-              <Typography variant="h6">Lista podprojektow</Typography>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                justifyContent="space-between"
+                alignItems={{ xs: 'stretch', sm: 'center' }}
+                spacing={2}
+              >
+                <Typography variant="h6">Lista podprojektow</Typography>
+                <Button variant="contained" onClick={() => setIsCreateOpen(true)}>
+                  Dodaj
+                </Button>
+              </Stack>
               <FormControl>
                 <InputLabel id="subproject-filter-project">Projekt</InputLabel>
                 <Select
@@ -141,6 +131,49 @@ export default function SubProjectsTab({
           </CardContent>
         </Card>
       </Grid>
+
+      <Dialog open={isCreateOpen} onClose={handleClose} fullWidth maxWidth="sm">
+        <DialogTitle>Nowy podprojekt</DialogTitle>
+        <DialogContent>
+          <Stack component="form" onSubmit={handleCreateSubProject} spacing={2} sx={{ pt: 1 }}>
+            <FormControl required>
+              <InputLabel id="create-subproject-project">Projekt</InputLabel>
+              <Select
+                labelId="create-subproject-project"
+                value={selectedProjectId}
+                label="Projekt"
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+              >
+                <MenuItem value="">Wybierz projekt</MenuItem>
+                {projects.map((project) => (
+                  <MenuItem key={project.Id} value={String(project.Id)}>{project.Name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              value={subProjectName}
+              onChange={(e) => setSubProjectName(e.target.value)}
+              label="Nazwa podprojektu"
+              required
+            />
+            <TextField
+              value={subProjectDescription}
+              onChange={(e) => setSubProjectDescription(e.target.value)}
+              label="Opis podprojektu"
+              multiline
+              minRows={3}
+            />
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+              <Button variant="outlined" onClick={handleClose}>
+                Anuluj
+              </Button>
+              <Button type="submit" variant="contained">
+                Dodaj podprojekt
+              </Button>
+            </Stack>
+          </Stack>
+        </DialogContent>
+      </Dialog>
     </Grid>
   );
 }
