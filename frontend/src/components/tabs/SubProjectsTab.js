@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -7,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
-  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -15,165 +15,106 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import { useState } from 'react';
+import StatusSelect from '../common/StatusSelect';
 
-export default function SubProjectsTab({
-  selectedProjectId,
-  setSelectedProjectId,
-  subProjectName,
-  setSubProjectName,
-  subProjectDescription,
-  setSubProjectDescription,
-  createSubProject,
-  projects,
-  subProjectFilterProjectId,
-  setSubProjectFilterProjectId,
-  filteredSubProjects,
-  statuses,
-  updateSubProjectStatus,
-  deleteSubProject
-}) {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+export default function SubProjectsTab({ projects, statuses, onCreateSubProject, onUpdateStatus, onDelete }) {
+  const [open, setOpen] = useState(false);
+  const [filterProjectId, setFilterProjectId] = useState('');
+  const [formProjectId, setFormProjectId] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+
+  const filteredSubProjects = projects.find(p => p.Id === Number(filterProjectId))?.SubProjects ?? [];
 
   const handleClose = () => {
-    setIsCreateOpen(false);
-    setSelectedProjectId('');
-    setSubProjectName('');
-    setSubProjectDescription('');
+    setOpen(false);
+    setFormProjectId('');
+    setName('');
+    setDescription('');
   };
 
-  const handleCreateSubProject = async (e) => {
-    const wasCreated = await createSubProject(e);
-    if (wasCreated) {
-      setIsCreateOpen(false);
-    }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const ok = await onCreateSubProject(Number(formProjectId), { name, description });
+    if (ok) handleClose();
   };
 
   return (
-    <Grid container spacing={2}>
-      <Grid size={{ xs: 12 }}>
-        <Card elevation={2}>
-          <CardContent>
-            <Stack spacing={2}>
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                justifyContent="space-between"
-                alignItems={{ xs: 'stretch', sm: 'center' }}
-                spacing={2}
-              >
-                <Typography variant="h6">Lista podprojektow</Typography>
-                <Button variant="contained" onClick={() => setIsCreateOpen(true)}>
-                  Dodaj
-                </Button>
-              </Stack>
-              <FormControl>
-                <InputLabel id="subproject-filter-project">Projekt</InputLabel>
-                <Select
-                  labelId="subproject-filter-project"
-                  value={subProjectFilterProjectId}
-                  label="Projekt"
-                  onChange={(e) => setSubProjectFilterProjectId(e.target.value)}
-                >
-                  <MenuItem value="">Wybierz projekt</MenuItem>
-                  {projects.map((project) => (
-                    <MenuItem key={project.Id} value={String(project.Id)}>{project.Name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+    <Card elevation={2}>
+      <CardContent>
+        <Stack spacing={2}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'center' }}
+            spacing={2}
+          >
+            <Typography variant="h6">Lista podprojektów</Typography>
+            <Button variant="contained" onClick={() => setOpen(true)}>Dodaj</Button>
+          </Stack>
 
-              {!subProjectFilterProjectId ? (
-                <Typography color="text.secondary">Najpierw wybierz projekt.</Typography>
-              ) : filteredSubProjects.length === 0 ? (
-                <Typography color="text.secondary">Brak podprojektow dla wybranego projektu.</Typography>
-              ) : (
-                <Stack spacing={1.5}>
-                  {filteredSubProjects.map((subProject) => (
-                    <Card key={subProject.Id} variant="outlined">
-                      <CardContent>
-                        <Stack
-                          direction={{ xs: 'column', sm: 'row' }}
-                          justifyContent="space-between"
-                          spacing={2}
-                        >
-                          <Box>
-                            <Typography variant="subtitle1" fontWeight={700}>{subProject.Name}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {subProject.Description || 'Brak opisu'}
-                            </Typography>
-                          </Box>
-                          <FormControl size="small" sx={{ minWidth: 160 }}>
-                            <InputLabel id={`subproject-status-${subProject.Id}`}>Status</InputLabel>
-                            <Select
-                              labelId={`subproject-status-${subProject.Id}`}
-                              value={subProject.Status}
-                              label="Status"
-                              onChange={(e) => updateSubProjectStatus(subProject.Id, e.target.value)}
-                            >
-                              {statuses.map((status) => (
-                                <MenuItem key={status} value={status}>{status}</MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={() => deleteSubProject(subProject.Id)}
-                          >
-                            Usun
-                          </Button>
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Stack>
-              )}
+          <FormControl>
+            <InputLabel id="sp-filter-project">Filtruj wg projektu</InputLabel>
+            <Select
+              labelId="sp-filter-project"
+              value={filterProjectId}
+              label="Filtruj wg projektu"
+              onChange={e => setFilterProjectId(e.target.value)}
+            >
+              <MenuItem value="">Wybierz projekt</MenuItem>
+              {projects.map(p => (
+                <MenuItem key={p.Id} value={String(p.Id)}>{p.Name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {!filterProjectId ? (
+            <Typography color="text.secondary">Najpierw wybierz projekt.</Typography>
+          ) : filteredSubProjects.length === 0 ? (
+            <Typography color="text.secondary">Brak podprojektów dla wybranego projektu.</Typography>
+          ) : (
+            <Stack spacing={1.5}>
+              {filteredSubProjects.map(sp => (
+                <Card key={sp.Id} variant="outlined">
+                  <CardContent>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
+                      <Box flex={1}>
+                        <Typography variant="subtitle1" fontWeight={700}>{sp.Name}</Typography>
+                        <Typography variant="body2" color="text.secondary">{sp.Description || 'Brak opisu'}</Typography>
+                      </Box>
+                      <StatusSelect value={sp.Status} onChange={e => onUpdateStatus(sp.Id, e.target.value)} statuses={statuses} />
+                      <Button variant="outlined" color="error" onClick={() => onDelete(sp.Id)}>Usuń</Button>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              ))}
             </Stack>
-          </CardContent>
-        </Card>
-      </Grid>
+          )}
+        </Stack>
+      </CardContent>
 
-      <Dialog open={isCreateOpen} onClose={handleClose} fullWidth maxWidth="sm">
+      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>Nowy podprojekt</DialogTitle>
         <DialogContent>
-          <Stack component="form" onSubmit={handleCreateSubProject} spacing={2} sx={{ pt: 1 }}>
+          <Stack component="form" onSubmit={handleSubmit} spacing={2} sx={{ pt: 1 }}>
             <FormControl required>
-              <InputLabel id="create-subproject-project">Projekt</InputLabel>
-              <Select
-                labelId="create-subproject-project"
-                value={selectedProjectId}
-                label="Projekt"
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-              >
+              <InputLabel id="modal-sp-project">Projekt</InputLabel>
+              <Select labelId="modal-sp-project" value={formProjectId} label="Projekt" onChange={e => setFormProjectId(e.target.value)}>
                 <MenuItem value="">Wybierz projekt</MenuItem>
-                {projects.map((project) => (
-                  <MenuItem key={project.Id} value={String(project.Id)}>{project.Name}</MenuItem>
+                {projects.map(p => (
+                  <MenuItem key={p.Id} value={String(p.Id)}>{p.Name}</MenuItem>
                 ))}
               </Select>
             </FormControl>
-            <TextField
-              value={subProjectName}
-              onChange={(e) => setSubProjectName(e.target.value)}
-              label="Nazwa podprojektu"
-              required
-            />
-            <TextField
-              value={subProjectDescription}
-              onChange={(e) => setSubProjectDescription(e.target.value)}
-              label="Opis podprojektu"
-              multiline
-              minRows={3}
-            />
+            <TextField value={name} onChange={e => setName(e.target.value)} label="Nazwa podprojektu" required />
+            <TextField value={description} onChange={e => setDescription(e.target.value)} label="Opis podprojektu" multiline minRows={3} />
             <Stack direction="row" spacing={1.5} justifyContent="flex-end">
-              <Button variant="outlined" onClick={handleClose}>
-                Anuluj
-              </Button>
-              <Button type="submit" variant="contained">
-                Dodaj podprojekt
-              </Button>
+              <Button variant="outlined" onClick={handleClose}>Anuluj</Button>
+              <Button type="submit" variant="contained">Dodaj podprojekt</Button>
             </Stack>
           </Stack>
         </DialogContent>
       </Dialog>
-    </Grid>
+    </Card>
   );
 }
