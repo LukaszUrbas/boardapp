@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -8,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -15,7 +15,8 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import StatusSelect from '../common/StatusSelect';
+import DeleteIcon from '@mui/icons-material/Delete';
+import KanbanBoard from '../common/KanbanBoard';
 
 export default function SubProjectsTab({ projects, statuses, onCreateSubProject, onUpdateStatus, onDelete }) {
   const [open, setOpen] = useState(false);
@@ -73,22 +74,22 @@ export default function SubProjectsTab({ projects, statuses, onCreateSubProject,
           ) : filteredSubProjects.length === 0 ? (
             <Typography color="text.secondary">Brak podprojektów dla wybranego projektu.</Typography>
           ) : (
-            <Stack spacing={1.5}>
-              {filteredSubProjects.map(sp => (
-                <Card key={sp.Id} variant="outlined">
-                  <CardContent>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
-                      <Box flex={1}>
-                        <Typography variant="subtitle1" fontWeight={700}>{sp.Name}</Typography>
-                        <Typography variant="body2" color="text.secondary">{sp.Description || 'Brak opisu'}</Typography>
-                      </Box>
-                      <StatusSelect value={sp.Status} onChange={e => onUpdateStatus(sp.Id, e.target.value)} statuses={statuses} />
-                      <Button variant="outlined" color="error" onClick={() => onDelete(sp.Id)}>Usuń</Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              ))}
-            </Stack>
+            <KanbanBoard
+              statuses={statuses}
+              items={filteredSubProjects}
+              getItemId={sp => sp.Id}
+              getItemStatus={sp => sp.Status}
+              onStatusChange={(id, status) => onUpdateStatus(Number(id), status)}
+              renderItem={sp => (
+                <Stack spacing={0.5}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Typography variant="subtitle2" fontWeight={700}>{sp.Name}</Typography>
+                    <IconButton size="small" color="error" onClick={() => onDelete(sp.Id)}><DeleteIcon fontSize="small" /></IconButton>
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">{sp.Description || 'Brak opisu'}</Typography>
+                </Stack>
+              )}
+            />
           )}
         </Stack>
       </CardContent>

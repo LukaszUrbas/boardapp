@@ -1,17 +1,7 @@
 import { useState } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Stack,
-  TextField,
-  Typography
-} from '@mui/material';
-import StatusSelect from '../common/StatusSelect';
+import { Button, Card, CardContent, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import KanbanBoard from '../common/KanbanBoard';
 
 export default function ProjectsTab({ projects, statuses, onCreateProject, onUpdateStatus, onDelete }) {
   const [open, setOpen] = useState(false);
@@ -33,44 +23,30 @@ export default function ProjectsTab({ projects, statuses, onCreateProject, onUpd
   return (
     <Card elevation={2}>
       <CardContent>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          justifyContent="space-between"
-          alignItems={{ xs: 'stretch', sm: 'center' }}
-          spacing={2}
-          sx={{ mb: 2 }}
-        >
-          <Typography variant="h6">Lista projektów</Typography>
-          <Button variant="contained" onClick={() => setOpen(true)}>Dodaj</Button>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+          <Typography variant="h6">Projekty</Typography>
+          <Button variant="contained" onClick={() => setOpen(true)}>Dodaj projekt</Button>
         </Stack>
 
         {projects.length === 0 ? (
           <Typography color="text.secondary">Brak projektów.</Typography>
         ) : (
-          <Stack spacing={1.5}>
-            {projects.map(project => (
-              <Card key={project.Id} variant="outlined">
-                <CardContent>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
-                    <Box flex={1}>
-                      <Typography variant="subtitle1" fontWeight={700}>{project.Name}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {project.Description || 'Brak opisu'}
-                      </Typography>
-                    </Box>
-                    <StatusSelect
-                      value={project.Status}
-                      onChange={e => onUpdateStatus(project.Id, e.target.value)}
-                      statuses={statuses}
-                    />
-                    <Button variant="outlined" color="error" onClick={() => onDelete(project.Id)}>
-                      Usuń
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            ))}
-          </Stack>
+          <KanbanBoard
+            statuses={statuses}
+            items={projects}
+            getItemId={p => p.Id}
+            getItemStatus={p => p.Status}
+            onStatusChange={(id, status) => onUpdateStatus(Number(id), status)}
+            renderItem={p => (
+              <Stack spacing={0.5}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                  <Typography variant="subtitle2" fontWeight={700}>{p.Name}</Typography>
+                  <IconButton size="small" color="error" onClick={() => onDelete(p.Id)}><DeleteIcon fontSize="small" /></IconButton>
+                </Stack>
+                <Typography variant="caption" color="text.secondary">{p.Description || 'Brak opisu'}</Typography>
+              </Stack>
+            )}
+          />
         )}
       </CardContent>
 

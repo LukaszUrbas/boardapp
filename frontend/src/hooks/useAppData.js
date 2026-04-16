@@ -2,6 +2,27 @@ import { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
 
 const API = 'http://localhost:8080';
+const STATUS_BY_ID = ['New', 'InProgress', 'OnHold', 'Finished'];
+
+function normalizeStatus(status) {
+  if (typeof status === 'number') return STATUS_BY_ID[status] ?? 'New';
+  return status ?? 'New';
+}
+
+function normalizeProjects(projects) {
+  return projects.map(project => ({
+    ...project,
+    Status: normalizeStatus(project.Status),
+    SubProjects: (project.SubProjects ?? []).map(subProject => ({
+      ...subProject,
+      Status: normalizeStatus(subProject.Status),
+      Tasks: (subProject.Tasks ?? []).map(task => ({
+        ...task,
+        Status: normalizeStatus(task.Status),
+      })),
+    })),
+  }));
+}
 
 export function useAppData() {
   const [users, setUsers] = useState([]);
@@ -15,7 +36,7 @@ export function useAppData() {
         axios.get(`${API}/projects`),
       ]);
       setUsers(usersRes.data);
-      setProjects(projectsRes.data);
+      setProjects(normalizeProjects(projectsRes.data));
     } catch {
       setMessage('Nie można połączyć się z API.');
     }

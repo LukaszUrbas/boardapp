@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -9,6 +8,7 @@ import {
   DialogTitle,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -16,7 +16,8 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import StatusSelect from '../common/StatusSelect';
+import DeleteIcon from '@mui/icons-material/Delete';
+import KanbanBoard from '../common/KanbanBoard';
 
 export default function TasksTab({ projects, users, statuses, onCreateTask, onUpdateStatus, onDelete, getUserName }) {
   const [open, setOpen] = useState(false);
@@ -103,23 +104,23 @@ export default function TasksTab({ projects, users, statuses, onCreateTask, onUp
           ) : filteredTasks.length === 0 ? (
             <Typography color="text.secondary">Brak zadań dla wybranego podprojektu.</Typography>
           ) : (
-            <Stack spacing={1.5}>
-              {filteredTasks.map(task => (
-                <Card key={task.Id} variant="outlined">
-                  <CardContent>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems="center" spacing={2}>
-                      <Box flex={1}>
-                        <Typography variant="subtitle1" fontWeight={700}>{task.Title}</Typography>
-                        <Typography variant="body2" color="text.secondary">{task.Description || 'Brak opisu'}</Typography>
-                        <Typography variant="caption" color="text.secondary">Przypisany: {getUserName(task.AssigneeId)}</Typography>
-                      </Box>
-                      <StatusSelect value={task.Status} onChange={e => onUpdateStatus(task.Id, e.target.value)} statuses={statuses} />
-                      <Button variant="outlined" color="error" onClick={() => onDelete(task.Id)}>Usuń</Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              ))}
-            </Stack>
+            <KanbanBoard
+              statuses={statuses}
+              items={filteredTasks}
+              getItemId={t => t.Id}
+              getItemStatus={t => t.Status}
+              onStatusChange={(id, status) => onUpdateStatus(Number(id), status)}
+              renderItem={t => (
+                <Stack spacing={0.5}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                    <Typography variant="subtitle2" fontWeight={700}>{t.Title}</Typography>
+                    <IconButton size="small" color="error" onClick={() => onDelete(t.Id)}><DeleteIcon fontSize="small" /></IconButton>
+                  </Stack>
+                  <Typography variant="caption" color="text.secondary">{t.Description || 'Brak opisu'}</Typography>
+                  <Typography variant="caption" color="text.secondary">Przypisany: {getUserName(t.AssigneeId)}</Typography>
+                </Stack>
+              )}
+            />
           )}
         </Stack>
       </CardContent>
