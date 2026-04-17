@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import axios from 'axios';
 import {
   Alert,
@@ -55,12 +55,12 @@ export default function App() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const handleUnauthorized = () => {
+  const handleUnauthorized = useCallback(() => {
     localStorage.removeItem('boardapp_token');
     setToken('');
     setPassword('');
     setLoginError('Sesja wygasła. Zaloguj się ponownie.');
-  };
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
