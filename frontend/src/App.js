@@ -9,47 +9,18 @@ import {
   Container,
   CssBaseline,
   Stack,
-  Tab,
-  Tabs,
   TextField,
   ThemeProvider,
-  Typography,
-  createTheme
+  Typography
 } from '@mui/material';
-import ProjectsTab from './components/tabs/ProjectsTab';
-import SubProjectsTab from './components/tabs/SubProjectsTab';
-import TasksTab from './components/tabs/TasksTab';
+import ProjectBoardPage from './components/ProjectBoardPage';
+import { appTheme, styles } from './App.styles';
 import { useAppData } from './hooks/useAppData';
 
 const STATUSES = ['New', 'InProgress', 'OnHold', 'Finished'];
-const TABS = {
-  projects: 'projects',
-  subprojects: 'subprojects',
-  tasks: 'tasks'
-};
 const API = 'http://localhost:8080';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#0f766e'
-    },
-    secondary: {
-      main: '#ea580c'
-    },
-    background: {
-      default: '#f4f8fb',
-      paper: '#ffffff'
-    }
-  },
-  shape: {
-    borderRadius: 14
-  }
-});
-
 export default function App() {
-  const [activeTab, setActiveTab] = useState(TABS.projects);
   const [token, setToken] = useState(localStorage.getItem('boardapp_token') ?? '');
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
@@ -99,11 +70,7 @@ export default function App() {
     message,
     setMessage,
     createProject,
-    updateProjectStatus,
-    deleteProject,
     createSubProject,
-    updateSubProjectStatus,
-    deleteSubProject,
     createTask,
     updateTaskStatus,
     deleteTask,
@@ -112,18 +79,10 @@ export default function App() {
 
   if (!token) {
     return (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider theme={appTheme}>
         <CssBaseline />
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'grid',
-            placeItems: 'center',
-            px: 2,
-            background: 'linear-gradient(140deg, #f5faf8 0%, #edf4ff 100%)'
-          }}
-        >
-          <Card elevation={3} sx={{ width: '100%', maxWidth: 420 }}>
+        <Box sx={styles.authPage}>
+          <Card elevation={3} sx={styles.authCard}>
             <CardContent>
               <Stack spacing={2.5} component="form" onSubmit={handleLogin}>
                 <Box>
@@ -157,74 +116,37 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={appTheme}>
       <CssBaseline />
-      <Box
-        sx={{
-          minHeight: '100vh',
-          py: 4,
-          background: 'linear-gradient(140deg, #f5faf8 0%, #edf4ff 100%)'
-        }}
-      >
-        <Container maxWidth={false} sx={{ px: { xs: 2, md: 4 } }}>
+      <Box sx={styles.appPage}>
+        <Box sx={styles.logoutButtonWrapper}>
+          <Button variant="outlined" onClick={handleLogout}>Wyloguj</Button>
+        </Box>
+
+        <Container maxWidth={false} sx={styles.appContainer}>
           <Stack spacing={2.5}>
             <Box>
-              <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', sm: 'center' }} spacing={1}>
-                <Box>
-                  <Typography variant="h4" fontWeight={700}>BoardApp</Typography>
-                  <Typography color="text.secondary">Panel zarządzania projektami</Typography>
-                </Box>
-                <Button variant="outlined" onClick={handleLogout}>Wyloguj</Button>
-              </Stack>
+              <Box>
+                <Typography variant="h4" fontWeight={700}>BoardApp</Typography>
+                <Typography color="text.secondary">Panel zarządzania projektami</Typography>
+              </Box>
             </Box>
 
             {message && (
               <Alert severity="success" onClose={() => setMessage('')}>{message}</Alert>
             )}
 
-            <Card elevation={2}>
-              <Tabs
-                value={activeTab}
-                onChange={(_, v) => setActiveTab(v)}
-                variant="fullWidth"
-              >
-                <Tab label="Projekty" value={TABS.projects} />
-                <Tab label="Podprojekty" value={TABS.subprojects} />
-                <Tab label="Zadania" value={TABS.tasks} />
-              </Tabs>
-            </Card>
-
-            {activeTab === TABS.projects && (
-              <ProjectsTab
-                projects={projects}
-                statuses={STATUSES}
-                onCreateProject={createProject}
-                onUpdateStatus={updateProjectStatus}
-                onDelete={deleteProject}
-              />
-            )}
-
-            {activeTab === TABS.subprojects && (
-              <SubProjectsTab
-                projects={projects}
-                statuses={STATUSES}
-                onCreateSubProject={createSubProject}
-                onUpdateStatus={updateSubProjectStatus}
-                onDelete={deleteSubProject}
-              />
-            )}
-
-            {activeTab === TABS.tasks && (
-              <TasksTab
-                projects={projects}
-                users={users}
-                statuses={STATUSES}
-                onCreateTask={createTask}
-                onUpdateStatus={updateTaskStatus}
-                onDelete={deleteTask}
-                getUserName={getUserName}
-              />
-            )}
+            <ProjectBoardPage
+              projects={projects}
+              users={users}
+              statuses={STATUSES}
+              onCreateProject={createProject}
+              onCreateSubProject={createSubProject}
+              onCreateTask={createTask}
+              onUpdateTaskStatus={updateTaskStatus}
+              onDeleteTask={deleteTask}
+              getUserName={getUserName}
+            />
           </Stack>
         </Container>
       </Box>
