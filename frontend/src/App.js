@@ -70,7 +70,9 @@ export default function App() {
     message,
     setMessage,
     createProject,
+    deleteProject,
     createSubProject,
+    deleteSubProject,
     createTask,
     updateTaskStatus,
     deleteTask,
@@ -141,7 +143,9 @@ export default function App() {
               users={users}
               statuses={STATUSES}
               onCreateProject={createProject}
+              onDeleteProject={deleteProject}
               onCreateSubProject={createSubProject}
+              onDeleteSubProject={deleteSubProject}
               onCreateTask={createTask}
               onUpdateTaskStatus={updateTaskStatus}
               onDeleteTask={deleteTask}

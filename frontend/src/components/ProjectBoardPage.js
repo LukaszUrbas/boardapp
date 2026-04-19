@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import {
   Button,
   Card,
   CardContent,
   Chip,
+  Collapse,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -24,7 +27,9 @@ export default function ProjectBoardPage({
   users,
   statuses,
   onCreateProject,
+  onDeleteProject,
   onCreateSubProject,
+  onDeleteSubProject,
   onCreateTask,
   onUpdateTaskStatus,
   onDeleteTask,
@@ -34,6 +39,9 @@ export default function ProjectBoardPage({
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createSubProjectOpen, setCreateSubProjectOpen] = useState(false);
   const [createTaskOpenForSubProjectId, setCreateTaskOpenForSubProjectId] = useState('');
+  const [collapsedSubProjects, setCollapsedSubProjects] = useState({});
+
+  const toggleSubProject = (id) => setCollapsedSubProjects(prev => ({ ...prev, [id]: !prev[id] }));
 
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
@@ -155,6 +163,9 @@ export default function ProjectBoardPage({
                 <Button variant="contained" onClick={() => setCreateSubProjectOpen(true)} sx={{ ml: 'auto', flexShrink: 0 }}>
                   Dodaj podprojekt
                 </Button>
+                <IconButton color="error" onClick={() => onDeleteProject(selectedProject.Id)}>
+                  <DeleteIcon />
+                </IconButton>
               </Stack>
               <Typography color="text.secondary">{selectedProject.Description || 'Brak opisu projektu'}</Typography>
               <Chip
@@ -179,26 +190,40 @@ export default function ProjectBoardPage({
           <Card key={subProject.Id} elevation={2}>
             <CardContent>
               <Stack spacing={1.5}>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ width: '100%' }}>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ width: '100%', cursor: 'pointer', userSelect: 'none' }}
+                  onClick={() => toggleSubProject(subProject.Id)}
+                >
                   <Typography variant="h6" fontWeight={700}>{subProject.Name}</Typography>
-                  <Button
-                    variant="contained"
-                    onClick={() => setCreateTaskOpenForSubProjectId(String(subProject.Id))}
-                    sx={{ ml: 'auto', flexShrink: 0 }}
-                  >
-                    Dodaj zadanie
-                  </Button>
-                </Stack>
-
-                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1}>
-                  <Typography color="text.secondary">{subProject.Description || 'Brak opisu'}</Typography>
                   <Chip
                     color="secondary"
                     variant="outlined"
                     label={`Zadania: ${tasks.length}`}
-                    sx={{ alignSelf: { xs: 'flex-start', sm: 'center' } }}
+                    sx={{ flexShrink: 0 }}
+                    onClick={e => e.stopPropagation()}
                   />
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ ml: 'auto', flexShrink: 0 }}
+                    onClick={e => { e.stopPropagation(); setCreateTaskOpenForSubProjectId(String(subProject.Id)); }}
+                  >
+                    Dodaj zadanie
+                  </Button>
+                  <IconButton color="error" onClick={e => { e.stopPropagation(); onDeleteSubProject(subProject.Id); }}>
+                    <DeleteIcon />
+                  </IconButton>
+                  <IconButton size="small" onClick={e => { e.stopPropagation(); toggleSubProject(subProject.Id); }}>
+                    {collapsedSubProjects[subProject.Id] ? <ExpandMoreIcon /> : <ExpandLessIcon />}
+                  </IconButton>
                 </Stack>
+
+                <Collapse in={!collapsedSubProjects[subProject.Id]}>
+                <Stack spacing={1.5}>
+                <Typography color="text.secondary">{subProject.Description || 'Brak opisu'}</Typography>
 
                 <KanbanBoard
                   statuses={statuses}
@@ -219,6 +244,8 @@ export default function ProjectBoardPage({
                     </Stack>
                   )}
                 />
+                </Stack>
+                </Collapse>
               </Stack>
             </CardContent>
           </Card>

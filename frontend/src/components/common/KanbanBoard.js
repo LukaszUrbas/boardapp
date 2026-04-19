@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Box, Chip, Paper, Stack, Typography } from '@mui/material';
+import { Box, Chip, Collapse, IconButton, Paper, Stack, Typography } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 
 const COLUMN_META = {
   New:        { label: 'Nowe',        color: '#1976d2', bg: '#e3f2fd' },
@@ -19,7 +22,10 @@ const COLUMN_META = {
  *   renderItem     - (item) => ReactNode  card content (without dnd chrome)
  */
 export default function KanbanBoard({ statuses, items, getItemId, getItemStatus, onStatusChange, renderItem }) {
+  const [collapsed, setCollapsed] = useState({});
   const columns = Object.fromEntries(statuses.map(s => [s, items.filter(i => getItemStatus(i) === s)]));
+
+  const toggleCollapse = (status) => setCollapsed(prev => ({ ...prev, [status]: !prev[status] }));
 
   const handleDragEnd = ({ source, destination, draggableId }) => {
     if (!destination) return;
@@ -41,6 +47,7 @@ export default function KanbanBoard({ statuses, items, getItemId, getItemStatus,
         {statuses.map(status => {
           const meta = COLUMN_META[status] ?? { label: status, color: '#555', bg: '#fafafa' };
           const col = columns[status];
+          const isCollapsed = !!collapsed[status];
 
           return (
             <Box key={status}>
@@ -55,14 +62,21 @@ export default function KanbanBoard({ statuses, items, getItemId, getItemStatus,
                   borderRadius: 2,
                   backgroundColor: meta.bg,
                   borderBottom: `3px solid ${meta.color}`,
+                  cursor: 'pointer',
+                  userSelect: 'none',
                 }}
+                onClick={() => toggleCollapse(status)}
               >
                 <Typography variant="subtitle2" fontWeight={700} sx={{ color: meta.color, flex: 1 }}>
                   {meta.label}
                 </Typography>
                 <Chip label={col.length} size="small" sx={{ backgroundColor: meta.color, color: '#fff', fontWeight: 700 }} />
+                <IconButton size="small" sx={{ color: meta.color, p: 0 }}>
+                  {isCollapsed ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
+                </IconButton>
               </Stack>
 
+              <Collapse in={!isCollapsed} unmountOnExit={false}>
               <Droppable droppableId={status}>
                 {(provided, snapshot) => (
                   <Box
@@ -106,6 +120,7 @@ export default function KanbanBoard({ statuses, items, getItemId, getItemStatus,
                   </Box>
                 )}
               </Droppable>
+              </Collapse>
             </Box>
           );
         })}
