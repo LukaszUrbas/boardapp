@@ -18,7 +18,7 @@ import { appTheme, styles } from './App.styles';
 import { useAppData } from './hooks/useAppData';
 
 const STATUSES = ['New', 'InProgress', 'OnHold', 'Finished'];
-const API = 'http://localhost:8080';
+const API = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('boardapp_token') ?? '');
